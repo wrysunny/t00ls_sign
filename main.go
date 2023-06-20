@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"syscall"
+	"time"
 	"unsafe"
 
 	"github.com/lxn/win"
@@ -55,7 +56,7 @@ func main() {
 		getWindowText.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&buf[0])), bufLen+1)
 
 		//fmt.Printf("Window handle: %v, Window title: %v\n", hwnd, syscall.UTF16ToString(buf))
-		if strings.Contains(syscall.UTF16ToString(buf), "微信") {
+		if strings.Contains(syscall.UTF16ToString(buf), "微信") || strings.Contains(syscall.UTF16ToString(buf), "T00ls安全") {
 			fmt.Println("Window handle: ", hwnd)
 			hwnd := syscall.Handle(hwnd)
 
@@ -73,8 +74,8 @@ func main() {
 			width := rect.Right - rect.Left
 			height := rect.Bottom - rect.Top
 			fmt.Printf("width: %d, height: %d\n", width, height)
-			// 微信聊天框最小大小为width: 430, height: 500
-			if width == 430 && height == 500 {
+			// 微信聊天框最小大小为width: 400, height: 374
+			if width == 400 && height == 374 {
 				fmt.Println("find it !")
 				// 获取不到聊天窗口中的文本框控件句柄（因为微信聊天界面用的DirectUI渲染的获取不到）
 				sendmessage(hwnd, rect)
@@ -153,16 +154,16 @@ func sendmessage(hwnd syscall.Handle, rect *windows.Rect) {
 	win.SetForegroundWindow(winHandle)
 
 	// 计算单击区域的坐标
-	x := rect.Left + 400
-	y := rect.Bottom + 200
+	x := rect.Left + 140
+	y := rect.Bottom - 59
 
 	// 将鼠标移动到单击区域
-	//win.SetCursorPos(int32(x), int32(y))
-	// 将鼠标移动到单击区域
+
 	var input INPUT
 	input.Type = INPUT_MOUSE
-	input.Mi.dx = int32(x * 65535 / win.GetSystemMetrics(win.SM_CXSCREEN))
-	input.Mi.dy = int32(y * 65535 / win.GetSystemMetrics(win.SM_CYSCREEN))
+	input.Mi.dx = x //int32(x * 65535 / win.GetSystemMetrics(win.SM_CXSCREEN))
+	input.Mi.dy = y //int32(y * 65535 / win.GetSystemMetrics(win.SM_CYSCREEN))
+	fmt.Println(input.Mi.dx, input.Mi.dy)
 
 	input.Mi.dwFlags = MOUSEEVENTF_LEFTDOWN
 	win.SendInput(1, unsafe.Pointer(&input), int32(unsafe.Sizeof(input)))
@@ -172,7 +173,11 @@ func sendmessage(hwnd syscall.Handle, rect *windows.Rect) {
 
 	fmt.Println("鼠标单击已模拟")
 
+	time.Sleep(time.Second * 1)
+
 	win.SendMessage(winHandle, win.WM_CHAR, uintptr('3'), 0)
+
+	time.Sleep(time.Second * 1)
 
 	win.SendMessage(winHandle, win.WM_KEYDOWN, uintptr(VK_RETURN), 0)
 	win.SendMessage(winHandle, win.WM_KEYUP, uintptr(VK_RETURN), 0)
