@@ -55,34 +55,37 @@ func main() {
 		buf := make([]uint16, bufLen+1)
 		getWindowText.Call(uintptr(hwnd), uintptr(unsafe.Pointer(&buf[0])), bufLen+1)
 
-		//fmt.Printf("Window handle: %v, Window title: %v\n", hwnd, syscall.UTF16ToString(buf))
-		if strings.Contains(syscall.UTF16ToString(buf), "微信") || strings.Contains(syscall.UTF16ToString(buf), "T00ls安全") {
-			fmt.Println("Window handle: ", hwnd)
-			hwnd := syscall.Handle(hwnd)
+		hwnd := syscall.Handle(hwnd)
 
-			// 获取窗口标题
-			title := getWindowTitle(hwnd)
-			fmt.Println("Title:", title)
+		// 获取窗口标题
+		title := getWindowTitle(hwnd)
 
-			// 获取窗口内容
-			content := getWindowContent(hwnd)
-			fmt.Println("Content:", content)
+		// 获取窗口内容
+		content := getWindowContent(hwnd)
 
-			// 获取窗口大小
-			rect := getWindowRectSize(hwnd)
-			fmt.Printf("Window Rect: left=%d, top=%d, right=%d, bottom=%d\n", rect.Left, rect.Top, rect.Right, rect.Bottom)
-			width := rect.Right - rect.Left
-			height := rect.Bottom - rect.Top
-			fmt.Printf("width: %d, height: %d\n", width, height)
-			// 微信聊天框最小大小为width: 400, height: 374
-			if width == 400 && height == 374 {
+		// 获取窗口大小
+		rect := getWindowRectSize(hwnd)
+
+		width := rect.Right - rect.Left
+		height := rect.Bottom - rect.Top
+		//fmt.Printf("width: %d, height: %d\n", width, height)
+
+		// 微信聊天框最小大小为width: 400, height: 374
+		if width == 400 && height == 374 {
+			//fmt.Printf("Window handle: %v, Window title: %v\n", hwnd, syscall.UTF16ToString(buf))
+			if strings.Contains(syscall.UTF16ToString(buf), "微信") || strings.Contains(syscall.UTF16ToString(buf), "T00ls安全") {
 				fmt.Println("find it !")
+				fmt.Println("Window handle: ", hwnd)
+				fmt.Println("Title:", title)
+				fmt.Println("Content:", content)
+				fmt.Printf("Window Rect: left=%d, top=%d, right=%d, bottom=%d\n", rect.Left, rect.Top, rect.Right, rect.Bottom)
+				fmt.Printf("width: %d, height: %d\n", width, height)
 				// 获取不到聊天窗口中的文本框控件句柄（因为微信聊天界面用的DirectUI渲染的获取不到）
 				sendmessage(hwnd, rect)
 				break
 			}
-			fmt.Println("------------------------------------")
 		}
+		//fmt.Println("------------------------------------")
 	}
 }
 
